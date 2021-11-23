@@ -1,4 +1,4 @@
-
+//pins D: 5,4,3
 
 //Variable to be passed in from main
 int turn_on =0;
