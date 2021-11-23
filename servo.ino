@@ -1,7 +1,7 @@
-//Controls servo angle based on input from A0 through POT voltage divider
+//Controls servo angle based on input from A1 through POT voltage divider
 #include <Servo.h>
 Servo myservo;
-const int A=A0;
+
 
 //Define ADC Register Pointers
 volatile unsigned char* my_ADMUX = (unsigned char*) 0x7C;
@@ -9,14 +9,15 @@ volatile unsigned char* my_ADCSRB = (unsigned char*) 0x7B;
 volatile unsigned char* my_ADCSRA = (unsigned char*) 0x7A;
 volatile unsigned int* my_ADC_DATA = (unsigned int*) 0x78;
 
+char channel =2;
 void setup(){
   adc_init();  //Start ADC
   Serial.begin(9600);
-  myservo.attach(9);
+  myservo.attach(13);
   myservo.write(90);// move servos to center position -> 90°
 } 
 void loop(){
-  int voltage = adc_read(A);//read voltage from POT
+  int voltage = adc_read(channel);//read voltage from POT
   int angle = voltage/5.7;//Scale down analog input to be between 180 and 0
   myservo.write(angle);// move servos 
 }
