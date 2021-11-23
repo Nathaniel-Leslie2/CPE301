@@ -10,6 +10,13 @@
 
 #define DHT_SENSOR_TYPE DHT_TYPE_11
 
+//RTC libraries + initialization
+#include <Wire.h>
+#include "RTClib.h"
+RTC_DS1307 rtc;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+
 Servo myservo;
 const int A=A0;
 
@@ -43,6 +50,15 @@ void setup( )
   lcd.begin(16, 2);
   // Print a message to the LCD.
   lcd.print("Temperature");
+
+  //error messages for RTC
+  if (! rtc.begin()) {
+   Serial.println("Couldn't find RTC");
+   while (1);
+ }
+ if (! rtc.isrunning()) {
+   Serial.println("RTC is NOT running!");
+
 }
 
 
@@ -83,6 +99,24 @@ void loop( )
   // print the number of seconds since reset:
   lcd.print("Celsius: ")
   lcd.print(op2);
+  
+//loop to log time for temperature readings
+ DateTime now = rtc.now();
+ Serial.print("Time log: ");
+ Serial.print(now.month(), DEC);
+ Serial.print('/');
+ Serial.print(now.day(), DEC);
+// Serial.print(now.year(), DEC);
+// Serial.print(" (");
+// Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+ Serial.print(" ");
+ Serial.print(now.hour(), DEC);
+ Serial.print(':');
+ Serial.print(now.minute(), DEC);
+ Serial.print(':');
+ Serial.print(now.second(), DEC);
+ Serial.println();
+ delay(15000);
 }
 
 static bool measure_environment( float *temperature, float *humidity )
