@@ -73,9 +73,10 @@ void loop( )
   {
     Serial.print( "Temperature = " );
     float op1 = temperature * 1.8;
-    float op2 = op1 + 32;
+    float op2 = op1 + 32; //conversion from F to C
     Serial.print(op2, 1 );
-    Serial.print( " deg. F, Humidity = " );
+    logTemp(op2);
+    Serial.print( " deg. C, Humidity = " );
     Serial.print( humidity, 1 );
     Serial.println( "%" );
   }
@@ -100,6 +101,9 @@ void loop( )
   lcd.print("Celsius: ")
   lcd.print(op2);
   
+}
+
+void logTemp(int temp){
 //loop to log time for temperature readings
  DateTime now = rtc.now();
  Serial.print("Time log: ");
@@ -115,8 +119,10 @@ void loop( )
  Serial.print(now.minute(), DEC);
  Serial.print(':');
  Serial.print(now.second(), DEC);
- Serial.println();
+ Serial.print(" Temperature is: ");
+ Serial.print(temp);
  delay(15000);
+  
 }
 
 static bool measure_environment( float *temperature, float *humidity )
