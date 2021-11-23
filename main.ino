@@ -2,6 +2,7 @@
 #include <dht_nonblocking.h>
 #include <Servo.h>
 #include <Adafruit_Sensor.h>
+#include <LiquidCrystal.h>
 
 //temperature sensor code:
 #include <DHT.h>
@@ -25,6 +26,9 @@ int adc_id = 0;
 int HistoryValue = 0;
 char printBuffer[128];
 
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+
 static const int DHT_SENSOR_PIN = 2; //pin two for temperature sensor
 DHT_nonblocking dht_sensor( DHT_SENSOR_PIN, DHT_SENSOR_TYPE );
 
@@ -35,6 +39,10 @@ void setup( )
   adc_init(); //initialized water and servo controls
   myservo.attach(9);
   myservo.write(90);// move servos to center position -> 90°
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  // Print a message to the LCD.
+  lcd.print("Error!");
 }
 
 
@@ -69,6 +77,11 @@ void loop( )
   int voltage = adc_read(A);//read voltage from POT
   int angle = voltage/5.7;//Scale down analog input to be between 180 and 0
   myservo.write(angle);// move servos   
+  // set the cursor to column 0, line 1
+  // (note: line 1 is the second row, since counting begins with 0):
+  lcd.setCursor(0, 1);
+  // print the number of seconds since reset:
+  lcd.print(millis() / 1000);
 }
 
 static bool measure_environment( float *temperature, float *humidity )
