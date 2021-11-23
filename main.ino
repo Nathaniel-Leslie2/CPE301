@@ -42,7 +42,7 @@ void setup( )
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
   // Print a message to the LCD.
-  lcd.print("Error!");
+  lcd.print("Temperature");
 }
 
 
@@ -81,7 +81,8 @@ void loop( )
   // (note: line 1 is the second row, since counting begins with 0):
   lcd.setCursor(0, 1);
   // print the number of seconds since reset:
-  lcd.print(millis() / 1000);
+  lcd.print("Celsius: ")
+  lcd.print(op2);
 }
 
 static bool measure_environment( float *temperature, float *humidity )
