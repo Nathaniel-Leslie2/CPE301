@@ -1,4 +1,3 @@
-
 #include <dht_nonblocking.h>
 #include <Servo.h>
 #include <Adafruit_Sensor.h>
@@ -38,7 +37,7 @@ LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 
 static const int DHT_SENSOR_PIN = 2; //pin two for temperature sensor
 DHT_nonblocking dht_sensor( DHT_SENSOR_PIN, DHT_SENSOR_TYPE );
-
+void adc_init();
 
 void setup( )
 {
@@ -58,6 +57,7 @@ void setup( )
  }
  if (! rtc.isrunning()) {
    Serial.println("RTC is NOT running!");
+ }
 
 }
 
@@ -74,8 +74,9 @@ void loop( )
     Serial.print( "Temperature = " );
     float op1 = temperature * 1.8;
     float op2 = op1 + 32; //conversion from F to C
+    temperature = op2;
     Serial.print(op2, 1 );
-    logTemp(op2);
+    logTemp(temperature);
     Serial.print( " deg. C, Humidity = " );
     Serial.print( humidity, 1 );
     Serial.println( "%" );
@@ -98,8 +99,8 @@ void loop( )
   // (note: line 1 is the second row, since counting begins with 0):
   lcd.setCursor(0, 1);
   // print the number of seconds since reset:
-  lcd.print("Celsius: ")
-  lcd.print(op2);
+  lcd.print("Celsius: ");
+  lcd.print(String(temperature));
   
 }
 
