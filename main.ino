@@ -7,6 +7,13 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
+// Define Pins for LEDs
+#define BLUE 3 //Turn on when motor is running.
+#define GREEN 5 //This LED is lit until the fan is turned on (idle state)
+#define RED 6 //turns on if water level too low, all other LEDs off until water level up
+#define YELLOW 8 //remains on until system starts (disable state)
+//END OF LED pin definitions
+
 #define DHT_SENSOR_TYPE DHT_TYPE_11
 
 //RTC libraries + initialization
@@ -67,6 +74,15 @@ void setup( )
   // Print a message to the LCD.
   lcd.print("Temperature:");
 
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(BLUE, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  digitalWrite(RED, LOW);
+  digitalWrite(GREEN, LOW);
+  digitalWrite(BLUE, LOW);
+  digitalWrite(YELLOW, HIGH);
+
   //error messages for RTC
 /*  if (! rtc.begin()) {
    Serial.println("Couldn't find RTC");
@@ -77,6 +93,14 @@ void setup( )
  }*/
 }
 
+//integer variables for LEDs
+int redValue = 255;
+int greenValue = 255;
+int blueValue = 255;
+int yellowValue = 255;
+
+//How to turn LED on/off
+// analogWrite(RED, redValue);
 
 void loop( )
 {
@@ -114,12 +138,13 @@ void loop( )
     Serial.println();
     logTemp(op2);
     Serial.print( "deg. F, Humidity = " );
-    Serial.print( humidity, 1 );
+    Serial.print(String(humidity));
     Serial.println( "%" );
   }
 //water sensor loop code:
     int value = adc_read(adc_id); // get adc value
-
+    //red LED water level low loop
+    errorLED(value);
     if(((HistoryValue>=value) && ((HistoryValue - value) > 10)) || ((HistoryValue<value) && ((value - HistoryValue) > 10)))
     {
       sprintf(printBuffer,"Water level is %d\n", value);
@@ -139,14 +164,36 @@ void loop( )
   lcd.print("Fahrenheit: ");
   lcd.print(String(temperature));
 
- if(temperature > 75){
+ if(temperature > 75 && value > 50){
   //write a 1 to the enable bit on PE3
   *port_e |= 0x08;
+  analogWrite(BLUE, blueValue);
+  analogWrite(RED, 0);
+  analogWrite(YELLOW, 0);
+  analogWrite(GREEN, 0);
   }
   else{
   *port_e &= 0x00;
+  analogWrite(BLUE, 0);
+  analogWrite(RED, 0);
+  analogWrite(YELLOW, 0);
+  analogWrite(GREEN, greenValue);
   }
 
+}
+
+void errorLED(int waterLevel){
+  if(waterLevel <= 50){
+  analogWrite(BLUE, 0);
+  analogWrite(RED, redValue);
+  analogWrite(YELLOW, 0);
+  analogWrite(GREEN, 0);  
+  lcd.print("Error!!!");
+  lcd.setCursor(0, 1);
+  lcd.print("WATER TOO LOW");
+  waterLevel = adc_read(adc_id);
+  errorLED(waterLevel);
+  }
 }
 
 void logTemp(int temp){
