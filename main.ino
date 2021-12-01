@@ -8,10 +8,10 @@
 #include <DHT_U.h>
 
 // Define Pins for LEDs
-#define BLUE 3 //Turn on when motor is running.
-#define GREEN 5 //This LED is lit until the fan is turned on (idle state)
-#define RED 6 //turns on if water level too low, all other LEDs off until water level up
-#define YELLOW 8 //remains on until system starts (disable state)
+#define BLUE 53 //Turn on when motor is running.
+#define GREEN 51 //This LED is lit until the fan is turned on (idle state)
+#define RED 47 //turns on if water level too low, all other LEDs off until water level up
+#define YELLOW 49 //remains on until system starts (disable state)
 //END OF LED pin definitions
 
 #define DHT_SENSOR_TYPE DHT_TYPE_11
@@ -164,7 +164,7 @@ void loop( )
   lcd.print("Fahrenheit: ");
   lcd.print(String(temperature));
 
- if(temperature > 75 && value > 50){
+ if(temperature > 75 && value > 150){
   //write a 1 to the enable bit on PE3
   *port_e |= 0x08;
   analogWrite(BLUE, blueValue);
@@ -183,7 +183,7 @@ void loop( )
 }
 
 void errorLED(int waterLevel){
-  if(waterLevel <= 50){
+  if(waterLevel <= 150){
   analogWrite(BLUE, 0);
   analogWrite(RED, redValue);
   analogWrite(YELLOW, 0);
@@ -192,6 +192,7 @@ void errorLED(int waterLevel){
   lcd.setCursor(0, 1);
   lcd.print("WATER TOO LOW");
   waterLevel = adc_read(adc_id);
+  *port_e &= 0x00;
   errorLED(waterLevel);
   }
 }
