@@ -62,6 +62,17 @@ volatile unsigned char* port_e = (unsigned char*) 0x2E;
 volatile unsigned char* ddr_e = (unsigned char*) 0x2D;
 volatile unsigned char* pin_e = (unsigned char*) 0x2C;
 
+//define PORT B pointers
+volatile unsigned char* port_b = (unsigned char*) 0x25;
+volatile unsigned char* ddr_b = (unsigned char*) 0x24;
+volatile unsigned char* pin_b = (unsigned char*) 0x23;
+
+//define PORT L pointers
+volatile unsigned char* port_l = (unsigned char*) 0x10B;
+volatile unsigned char* ddr_l = (unsigned char*) 0x10A;
+volatile unsigned char* pin_l = (unsigned char*) 0x109;
+
+
 //define port G pointers
 volatile unsigned char* port_g = (unsigned char*) 0x34;
 volatile unsigned char* ddr_g = (unsigned char*) 0x33;
@@ -77,14 +88,19 @@ void setup( )
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
 
-  pinMode(RED, OUTPUT);
-  pinMode(GREEN, OUTPUT);
-  pinMode(BLUE, OUTPUT);
-  pinMode(YELLOW, OUTPUT);
-  digitalWrite(RED, LOW);
-  digitalWrite(GREEN, LOW);
-  digitalWrite(BLUE, LOW);
-  digitalWrite(YELLOW, HIGH);
+  //pinMode(RED, OUTPUT);
+  *ddr_l |= B00000100;
+  //pinMode(GREEN, OUTPUT);
+  *ddr_b |= B00000100;
+  //pinMode(BLUE, OUTPUT);
+  *ddr_b |= B00000001;
+  //pinMode(YELLOW, OUTPUT);
+  *ddr_l |= B00000001;
+  //digitalWrite(RED, LOW);
+  //digitalWrite(GREEN, LOW);
+  //digitalWrite(BLUE, LOW);
+  //digitalWrite(YELLOW, HIGH);
+  *port_l |= B00000001;
 
  //DC motor setup
  //Set PE5 to output
@@ -154,18 +170,23 @@ void motorToggle(float temperature, float value){
       if(temperature > 75 && value > 25){
   //write a 1 to the enable bit on PE3
   *port_e |= 0x08;
-  analogWrite(BLUE, blueValue);
-  analogWrite(RED, 0);
-  analogWrite(YELLOW, 0);
-  analogWrite(GREEN, 0);
+  //analogWrite(BLUE, blueValue);
+  *port_b |= B00000001;
+  //analogWrite(RED, 0); && analogWrite(YELLOW, 0);
+  *port_l &= 11111010;
+   //analogWrite(GREEN, 0);
+  *port_b &= B11111011;
   }
   
   if(temperature < 75){
   *port_e &= 0x00;
-  analogWrite(BLUE, 0);
-  analogWrite(RED, 0);
-  analogWrite(YELLOW, 0);
-  analogWrite(GREEN, greenValue);
+  //analogWrite(BLUE, 0);
+  *port_b &= B11111110;
+  //analogWrite(RED, 0);
+  //analogWrite(YELLOW, 0);
+  *port_l &= B11111010;
+  //analogWrite(GREEN, greenValue);
+  *port_b |= B00000100; 
   }
 //write a 1 to PE5
 *port_e |= 0x20;
@@ -176,10 +197,12 @@ void motorToggle(float temperature, float value){
   }
 
 void errorLED(int waterLevel){
-  analogWrite(BLUE, 0);
-  analogWrite(RED, redValue);
-  analogWrite(YELLOW, 0);
-  analogWrite(GREEN, 0);  
+  //analogWrite(BLUE, 0);
+  *port_b &= B11111010;
+  //analogWrite(RED, redValue);
+  *port_l |= B00000100;
+  //analogWrite(YELLOW, 0);
+  //analogWrite(GREEN, 0);  
   lcd.setCursor(0, 0);
   lcd.print("Error!         ");
   lcd.setCursor(0, 1);
