@@ -97,6 +97,7 @@ void setup( )
   //pinMode(YELLOW, OUTPUT);
   *ddr_l |= B00000001;
   //digitalWrite(RED, LOW);
+  *ddr_l &= B11111011;
   //digitalWrite(GREEN, LOW);
   //digitalWrite(BLUE, LOW);
   //digitalWrite(YELLOW, HIGH);
@@ -147,7 +148,7 @@ void loop( )
    // int value = 151; // get adc value
 
     //red LED water level low loop
-    if(value < 25){ errorLED(value); }
+    if(value < 50){ errorLED(value); }
     
     if(((HistoryValue>=value) && ((HistoryValue - value) > 10)) || ((HistoryValue<value) && ((value - HistoryValue) > 10)))
     {
@@ -167,7 +168,7 @@ if(temperature > 0){
 }
 
 void motorToggle(float temperature, float value){
-      if(temperature > 75 && value > 25){
+      if(temperature > 76 && value > 50){
   //write a 1 to the enable bit on PE3
   *port_e |= 0x08;
   //analogWrite(BLUE, blueValue);
@@ -178,7 +179,7 @@ void motorToggle(float temperature, float value){
   *port_b &= B11111011;
   }
   
-  if(temperature < 75){
+  if(temperature < 76){
   *port_e &= 0x00;
   //analogWrite(BLUE, 0);
   *port_b &= B11111110;
@@ -210,7 +211,7 @@ void errorLED(int waterLevel){
   waterLevel = adc_read(adc_id);
   *port_e &= 0x00;
   delay(4000);
-  if(waterLevel < 25){
+  if(waterLevel < 50){
   errorLED(waterLevel);
   }
 }
