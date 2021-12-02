@@ -72,7 +72,7 @@ void setup( )
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
   // Print a message to the LCD.
-  lcd.print("Temperature:");
+//  lcd.print("  Humidity: ");
 
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
@@ -123,26 +123,27 @@ void loop( )
   //end of DC motor code
 
   
-  float temperature;
-  float humidity;
+  float temperature = 0;
+  float humidity = 0;
 
   /* Measure temperature and humidity.  If the functions returns
      true, then a measurement is available. */
   if( measure_environment( &temperature, &humidity ) == true )
   {
-    Serial.print( "Temperature = " );
+    timeStamp();
+
+    Serial.print( "Temperature: " );
     float op1 = temperature * 1.8;
     float op2 = op1 + 32; //conversion from C to F
     temperature = op2;
-    Serial.print(String(op2));
-    Serial.println();
-    logTemp(op2);
+    Serial.print(temperature, 1);
+    Serial.print("\n");
     Serial.print( "deg. F, Humidity = " );
-    Serial.print(String(humidity));
-    Serial.println( "%" );
+    Serial.print(humidity, 1);
+    Serial.print("%\n");
   }
 //water sensor loop code:
-    int value = adc_read(adc_id); // get adc value
+    int value = 151;//adc_read(adc_id); // get adc value
     //red LED water level low loop
     errorLED(value);
     if(((HistoryValue>=value) && ((HistoryValue - value) > 10)) || ((HistoryValue<value) && ((value - HistoryValue) > 10)))
@@ -157,12 +158,9 @@ void loop( )
   int angle = voltage/5.7;//Scale down analog input to be between 180 and 0
   myservo.write(angle);// move servos   
   
-  // set the cursor to column 0, line 1
-  // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(0, 1);
-  // print the number of seconds since reset:
-  lcd.print("Fahrenheit: ");
-  lcd.print(String(temperature));
+if(temperature > 0){
+  lcdScreen(temperature, humidity);
+}
 
  if(temperature > 75 && value > 150){
   //write a 1 to the enable bit on PE3
@@ -193,31 +191,39 @@ void errorLED(int waterLevel){
   lcd.print("WATER TOO LOW");
   waterLevel = adc_read(adc_id);
   *port_e &= 0x00;
+  delay(4000);
   errorLED(waterLevel);
   }
 }
 
-void logTemp(int temp){
+void lcdScreen(float temperature, float humidity){
+  // set the cursor to column 0, line 1
+  // (note: line 1 is the second row, since counting begins with 0):
+  lcd.setCursor(0, 0);
+  lcd.print("Humidity: ");
+  lcd.print(String(humidity));
+  
+  lcd.setCursor(0, 1);
+  // print the number of seconds since reset:
+  lcd.print("Fahrenheit: ");
+  lcd.print(String(temperature));
+}
+
+void timeStamp(){
 //loop to log time for temperature readings
  DateTime now = rtc.now();
- Serial.print("Time log: ");
+ Serial.print("\nTime: ");
  Serial.print(now.month(), DEC);
  Serial.print('/');
  Serial.print(now.day(), DEC);
-// Serial.print(now.year(), DEC);
-// Serial.print(" (");
-// Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
  Serial.print(" ");
  Serial.print(now.hour(), DEC);
  Serial.print(':');
  Serial.print(now.minute(), DEC);
  Serial.print(':');
  Serial.print(now.second(), DEC);
- Serial.print(" Temperature is: ");
- Serial.print(temp);
  Serial.println();
- delay(9000);
-  
+ delay(3000); 
 }
 
 static bool measure_environment( float *temperature, float *humidity )
