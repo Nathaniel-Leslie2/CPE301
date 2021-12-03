@@ -17,7 +17,7 @@ void setup() {
 }
 
 void loop() {
-  if(*pin_b>0){
+  if(*pin_b==0){
     i++;
   }
  
