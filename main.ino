@@ -2,10 +2,11 @@
 #include <Servo.h>
 #include <Adafruit_Sensor.h>
 #include <LiquidCrystal.h>
-
-//temperature sensor code:
 #include <DHT.h>
 #include <DHT_U.h>
+#include <Wire.h>
+#include "RTClib.h"
+RTC_DS1307 rtc;
 
 // Define Pins for LEDs
 #define BLUE 53 //Turn on when motor is running.
@@ -15,19 +16,11 @@
 //END OF LED pin definitions
 
 #define DHT_SENSOR_TYPE DHT_TYPE_11
-
-//RTC libraries + initialization
-#include <Wire.h>
-#include "RTClib.h"
-RTC_DS1307 rtc;
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 
 Servo myservo;
 const int A = 0b00000010;
-
-//DC motor code:
-//pins D: 5,4,3
 
 //integer variables for LEDs
 int redValue = 255;
@@ -79,6 +72,17 @@ volatile unsigned char* ddr_g = (unsigned char*) 0x33;
 volatile unsigned char* pin_g = (unsigned char*) 0x32;
 //end of DC motor code
 
+
+int inPin = 52;         // the number of the input pin
+int outPin = 50;       // the number of the output pin
+
+int state = LOW;      // the current state of the output pin
+int reading;           // the current reading from the input pin
+int previous = HIGH;    // the previous reading from the input pin
+
+long time = 0;         // the last time the output pin was toggled
+long debounce = 200;   // the debounce time, increase if the output flickers
+
 void setup( )
 {
   Serial.begin( 9600);
@@ -100,6 +104,7 @@ void setup( )
   *ddr_l &= B11111011;
   //digitalWrite(GREEN, LOW);
   //digitalWrite(BLUE, LOW);
+  
   //digitalWrite(YELLOW, HIGH);
   *port_l |= B00000001;
 
@@ -110,6 +115,9 @@ void setup( )
   *ddr_e |= 0x08;
 //set PG5 to output
   *ddr_g |= 0x20;
+
+  pinMode(inPin, INPUT);
+  pinMode(outPin, OUTPUT);
 
   //error messages for RTC
  if (! rtc.begin()) {
@@ -125,9 +133,25 @@ void loop( )
 {  
   float temperature;
   float humidity;
+  reading = digitalRead(inPin);
 
-  /* Measure temperature and humidity.  If the functions returns
-     true, then a measurement is available. */
+  if (reading == HIGH && previous == LOW && millis() - time > debounce) {
+    if (state == HIGH){
+      state = LOW;
+      Serial.print("OFF\n");
+    }
+    else{
+      Serial.print("ON\n");
+      state = HIGH;
+    }
+    time = millis();    
+  }
+
+  digitalWrite(outPin, state);
+
+  previous = reading;
+
+  if(state == HIGH){
   if( measure_environment( &temperature, &humidity ) == true )
   {
     timeStamp();
@@ -165,6 +189,23 @@ if(temperature > 0){
 }
 
   motorToggle(temperature, value);
+  }
+  else if(state == LOW){
+  lcd.setCursor(0, 0);
+  lcd.print("STATUS:           ");
+  lcd.setCursor(0, 1);
+  lcd.print("IDLE...          ");
+
+  //analogWrite(BLUE, 0);
+  *ddr_b |= B00000001;
+  //analogWrite(RED, 0);
+   *ddr_l &= B11111011;
+  //analogWrite(YELLOW, yellowValue);
+  *port_l |= B00000001;
+   //analogWrite(GREEN, 0);
+  *port_b &= B11111011;
+    
+  }
 }
 
 void motorToggle(float temperature, float value){
